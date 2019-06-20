@@ -1,0 +1,46 @@
+src/payment/api/v1/data/payment.json
+
+static_cdn
+
+# **/migrations/**
+# !**/migrations
+# !**/migrations/__init__.py
+**/node_modules/**
+
+*.pyc
+*.sqlite3
+
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.venv
+.env/
+pip-selfcheck.json
+venv/
+mysql
+
+# JetBrains project files
+.idea
+
+# Mac DS_Store Files
+.DS_Store
+
+# Windows thumbnail cache
+Thumbs.db
+
+# local settings
+local_settings.py
+local.py
+
+# Visual Studio Code settings
+.vscode/
+
+# Environments variable
+src/env.py
