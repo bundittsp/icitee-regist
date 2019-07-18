@@ -1,0 +1,85 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}
+  Profile
+{% endblock %}
+
+{% block content %}
+  <form method="POST">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">My Profile</h6>
+          </div>
+          <div class="card-body">
+            <div class="container">
+              {% if success %}
+              <div class="row">
+                <div class="col text-center text-success">
+                    Your profile is updated.<br/>
+                </div>
+              </div>
+              {% endif %}
+              <div class="row form-group">
+                <div class="col-6 col-md-2">
+                  <strong>EDAS No.</strong>
+                </div>
+                <div class="col">
+                  {{ user.username }}
+                </div>
+              </div>
+              <div class="row form-group">
+                <div class="col-6 col-md-2">
+                  <strong>First Name</strong>
+                </div>
+                <div class="col-6 col-md-4">
+                  {{ user_form.first_name }}
+                  {{ user_form.first_name.errors }}
+                </div>
+                <div class="col-6 col-md-2">
+                  <strong>Last Name</strong>
+                </div>
+                <div class="col-6 col-md-4">
+                  {{ user_form.last_name }}
+                  {{ user_form.last_name.errors }}
+                </div>
+              </div>
+              <div class="row form-group">
+                <div class="col-6 col-md-2">
+                  <strong>E-mail</strong>
+                </div>
+                <div class="col-6 col-md-4">
+                  {{ user_form.email }}
+                  {{ user_form.email.errors }}
+                </div>
+                <div class="col-6 col-md-2">
+                  <strong>IEEE No.</strong>
+                </div>
+                <div class="col-6 col-md-4">
+                  {{ author_form.ieee }}
+                  {{ author_form.ieee.errors }}
+                </div>
+              </div>
+              <div class="row form-group">
+                <div class="col-6 col-md-2">
+                  <strong>Country</strong>
+                </div>
+                <div class="col-6 col-md-4">
+                  {{ author_form.country }}
+                  {{ author_form.country.errors }}
+                </div>
+              </div>
+              <div class="row form-group">
+                <div class="col">
+                  <input type="submit" value="Save" class="btn btn-primary btn-user btn-block"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}
+  Step 1 - Create Order
+{% endblock %}
+
+{% block content %}
+  <form method="POST">
+  {% csrf_token %}
+    <div class="row">
+      <div class="col-lg-11">
+        <!-- Default Card Example -->
+        <div class="card mb-4">
+          <div class="card-header">
+            Title: Extraction and Evaluation of Popular Online Trends: A Case of Pantip.com (5021119)
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12">Author(s): Bundit Thanasopon, Nattawut Sumret, Jirawin Buranapanitkij, Ponrudee
+                Netisopakul
+              </div>
+              <div class="col">Page(s): 4</div>
+            </div>
+            <div class="row">
+              <div class="col-md-10">Price: 18,000 THB / 580 USD</div>
+              <div class="col-md-2">
+                <div class="form-group">
+                  <div class="custom-control custom-checkbox small">
+                    <input type="checkbox" class="custom-control-input" id="customCheck2">
+                    <label class="custom-control-label" for="customCheck2">Pay for this article</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            Title: Factors Influencing E-Payment Loyalty in Thailand (5021133)
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12">Author(s): Kobthong Ladkoom, Bundit Thanasopon</div>
+              <div class="col">Page(s): 5</div>
+            </div>
+            <div class="row">
+              <div class="col-md-10">Price: 18,000 THB / 580 USD</div>
+              <div class="col-md-2">
+                <div class="form-group">
+                  <div class="custom-control custom-checkbox small">
+                    <input type="checkbox" class="custom-control-input" id="customCheck2">
+                    <label class="custom-control-label" for="customCheck2">Pay for this article</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            Additions
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Remark</th>
+                  <th>Price</th>
+                  <th>Amount</th>
+                  <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td>Attendant (observer)</td>
+                  <td>-</td>
+                  <td width="15%">6,000 THB<br/>200 USD</td>
+                  <td>
+                    <input type="number" class="form-control" id="amount1" value="2">
+                  </td>
+                  <td width="15%">12,000 THB<br/>400 USD</td>
+                </tr>
+                <tr>
+                  <td>Additional banquet ticket</td>
+                  <td>The banquet will be held at Siam Paragon.</td>
+                  <td width="15%">1,500 THB<br/>50 USD</td>
+                  <td>
+                    <input type="number" class="form-control" id="amount2" value="2">
+                  </td>
+                  <td width="15%">3,000 THB<br/>100 USD</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+              <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                  <div class="col-1">
+                    <i class="fas fa-cash-register fa-2x text-gray-300"></i>
+                  </div>
+                  <div class="col-5 mr-2">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Price:</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">33,000 THB or 1,080 USD</div><br/>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1" checked>
+                      <label class="form-check-label" for="inlineRadio1">Pay in THB</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+                      <label class="form-check-label" for="inlineRadio2">Pay in USD</label>
+                    </div>
+                  </div>
+                  <div class="col mr-1">
+                    <input type="submit" class="btn btn-info btn-lg" value="Pay by Credit Card">
+                  </div>
+                  <div class="col mr-1">
+                    <input type="button" class="btn btn-warning btn-lg" value="Bank Transfer">
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--<div class="col-md-6 mb-4">
+              <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                  <div class="row no-gutters align-items-center pt-3 pb-4">
+                    <div class="col mr-2">
+                      <input type="submit" class="btn btn-info btn-lg" value="Pay by Credit Card">
+                    </div>
+                    <div class="col-auto">
+                      <input type="button" class="btn btn-warning btn-lg" value="Bank Transfer">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>-->
+        </div>
+
+      </div>
+    </div>
+  </form>
+{% endblock %}
+

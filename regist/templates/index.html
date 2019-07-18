@@ -1,0 +1,99 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}
+  Home
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Your Paper(s)</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+              <tr>
+                <th>EDAS Paper No.</th>
+                <th>Paper Title</th>
+                <th>Author(s)</th>
+                <th>Fee (THB / USD)</th>
+                <th>Status</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% if articles %}
+                {% for article in articles %}
+                <tr>
+                  <td>{{ article.edas_id }}</td>
+                  <td>{{ article.title }}</td>
+                  <td>{{ article.get_authors_text }}</td>
+                  <td>{{ article.price }}</td>
+                  <td>{{ article.get_status }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5">No data</td>
+                </tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Your Payment(s)</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+              <tr>
+                <th>Code</th>
+                <th>Total</th>
+                <th>Method</th>
+                <th>Uploaded Slip?</th>
+                <th>Paid By</th>
+                <th>Paid Date</th>
+                <th>Confirmed?</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% if payments %}
+                {% for payment in payments %}
+                <tr>
+                  <td>{{ payment.code }}</td>
+                  <td>{{ payment.total_price }}</td>
+                  <td>{{ payment.get_method_text }}</td>
+                  <td>SLIP</td>
+                  <td>{{ payment.create_by.get_full_name }}</td>
+                  <td>{{ payment.create_date }}</td>
+                  <td>{{ payment.confirm }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="7">No data</td>
+                </tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+    /*$(document).ready(function () {
+      $('#dataTable').DataTable();
+    });*/
+  </script>
+{% endblock %}

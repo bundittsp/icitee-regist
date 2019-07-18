@@ -1,0 +1,62 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}
+  Pay by Credit Card
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Your Paper(s)</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+              <tr>
+                <th>EDAS Paper No.</th>
+                <th>Paper Title</th>
+                <th>Author(s)</th>
+                <th>Fee (THB / USB)</th>
+                <th>Status</th>
+                <th>Paid By</th>
+                <th>Paid Date</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td>5021119</td>
+                <td>Extraction and Evaluation of Popular Online Trends: A Case of Pantip.com</td>
+                <td>Bundit Thanasopon, Nattawut Sumret, Jirawin Buranapanitkij, Ponrudee Netisopakul</td>
+                <td>18,000 / 580</td>
+                <td>Paid</td>
+                <td>Bundit Thansopon</td>
+                <td>2019-06-22</td>
+              </tr>
+              <tr>
+                <td>5021133</td>
+                <td>Factors Influencing E-Payment Loyalty in Thailand</td>
+                <td>Kobthong Ladkoom, Bundit Thanasopon</td>
+                <td>18,000 / 580</td>
+                <td>Accepted</td>
+                <td>-</td>
+                <td>-</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+    /*$(document).ready(function () {
+      $('#dataTable').DataTable();
+    });*/
+  </script>
+{% endblock %}
