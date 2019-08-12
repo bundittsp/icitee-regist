@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
 import regist.views as views
 from django.contrib.auth import views as auth_views
 
@@ -28,4 +27,5 @@ urlpatterns = [
     path('forget-password/', views.forget_password, name='forget_password'),
     path('activate/<str:uid>/<str:token>/', views.activate, name='activate'),
     path('regist/', include('regist.urls')),
+    path('api/', include('regist.api.urls'))
 ]

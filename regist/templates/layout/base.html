@@ -53,7 +53,7 @@
 
       <!-- Nav Item - My Profile -->
       <li class="nav-item active">
-        <a class="nav-link" href="{% url 'my_profile' %}">
+        <a class="nav-link" href="{% url 'my-profile' %}">
           <i class="fas fa-fw fa-user-circle"></i>
           <span>My Profile</span></a>
       </li>
@@ -66,7 +66,15 @@
       </li>
 
       <!-- Divider -->
+      {% if request.user.is_superuser %}
       <hr class="sidebar-divider d-none d-md-block">
+
+      <li class="nav-item active">
+        <a class="nav-link" href="{% url 'payment-search' %}">
+          <i class="fas fa-fw fa-search"></i>
+          <span>Search Payments</span></a>
+      </li>
+      {% endif %}
 
     </ul>
     <!-- End of Sidebar -->
@@ -106,6 +114,9 @@
   <!-- Page level plugins -->
   <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
   <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+  <!-- JS Cookie Libtrary -->
+  <script src="{% static 'js/js.cookie.js' %}"></script>
 
   {% block script %}
   {% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'layout/base_print.html' %}
+{% load multiply %}
+
+{% block title %}
+  Payment No.: {{ payment.code }}
+{% endblock %}
+
+{% block style %}
+  <style>
+    body {
+      background: rgb(204,204,204);
+    }
+    page[size="A4"] {
+      background: white;
+      width: 21cm;
+      height: 29.7cm;
+      display: block;
+      margin: 0 auto;
+      margin-top: 0.5cm;
+      margin-bottom: 0.5cm;
+      padding-top: 1.5cm;
+      padding-bottom: 1.5cm;
+      padding-left: 2cm;
+      padding-right: 1cm;
+      box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+    }
+    @media print {
+      body, page[size="A4"] {
+        margin: 0;
+        box-shadow: 0;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <page size="A4">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="display-4">ICITEE 2019</h1>
+      </div>
+      <div class="col-12">
+        <p class="lead">
+          The 11<sup>th</sup> International Conference on Information Technology and Electrical Engineering
+        </p>
+      </div>
+      <div class="col-6">
+        Date: October 10-11, 2019<br/>
+        Venue: Pattaya, Thailand<br/>
+        Website: http://www.icitee.org
+      </div>
+      <div class="col-6">
+        Organized by:<br/>
+        Faculty of Information Technology,<br/>
+        KMITL, Thailand
+      </div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div class="col-12 text-center">
+        <p class="h3">Confirmation of Payment</p>
+      </div>
+      <div class="col-6">
+        No.: {{ payment.code }}
+      </div>
+      <div class="col-6 text-right">
+        Date: {{ payment.create_date.date }}
+      </div>
+      <div class="col-12">
+        Receive money from: {{ payment.create_by.get_full_name }}
+      </div>
+      <div class="col-12">
+        Address: {{ payment.address }}
+      </div>
+    </div><br/>
+    <div class="row">
+      <div class="col">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Amount</th>
+                <th>Total</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% if payment.paymentitem_set %}
+                {% for item in payment.paymentitem_set.all %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>
+                    {{ item.add_item.name }}
+                    {% if item.article %}
+                      <br><small>{{ item.article.title }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.price > 0 %}
+                      {{ item.price }} THB
+                    {% elif item.price_us > 0 %}
+                      {{ item.price_us }} USD
+                    {% endif %}
+                  </td>
+                  <td>{{ item.amount }}</td>
+                  <td>
+                    {% if item.price > 0 %}
+                      {{ item.price|multiply:item.amount }} THB
+                    {% elif item.price_us > 0 %}
+                      {{ item.price_us|multiply:item.amount }} USD
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="7">No data</td>
+                </tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+      </div>
+    </div>
+  <br/>
+    <div class="row">
+      <div class="col">
+        <p class="h5">Total amount of money received:
+          {% if payment.currency == 'THB' %}
+            {{ total }}
+          {% elif payment.currency == 'USD' %}
+            {{ total_us }}
+          {% endif %} {{ payment.currency }}
+        </p>
+      </div>
+    </div>
+  </page>
+{% endblock %}

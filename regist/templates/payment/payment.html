@@ -5,52 +5,38 @@
 {% endblock %}
 
 {% block content %}
+  <div id="app">
   <form method="POST">
   {% csrf_token %}
     <div class="row">
-      <div class="col-lg-11">
+      <div class="col">
         <!-- Default Card Example -->
-        <div class="card mb-4">
+        <div class="card mb-4" v-for="article in articles">
           <div class="card-header">
-            Title: Extraction and Evaluation of Popular Online Trends: A Case of Pantip.com (5021119)
+            Title: [[ article.title ]] ([[ article.edas_id ]])
           </div>
           <div class="card-body">
             <div class="row">
-              <div class="col-12">Author(s): Bundit Thanasopon, Nattawut Sumret, Jirawin Buranapanitkij, Ponrudee
-                Netisopakul
+              <div class="col-12">Author(s):
+                <template v-for="author in article.authors">
+                  [[ author ]];
+                </template>
               </div>
-              <div class="col">Page(s): 4</div>
+              <div class="col">Page(s): [[ article.page_no ]]</div>
             </div>
             <div class="row">
-              <div class="col-md-10">Price: 18,000 THB / 580 USD</div>
-              <div class="col-md-2">
+              <div class="col-md-9">Price: [[ article.price ]] THB / [[ article.price_us ]] USD</div>
+              <div class="col-md-3">
                 <div class="form-group">
                   <div class="custom-control custom-checkbox small">
-                    <input type="checkbox" class="custom-control-input" id="customCheck2">
-                    <label class="custom-control-label" for="customCheck2">Pay for this article</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card mb-4">
-          <div class="card-header">
-            Title: Factors Influencing E-Payment Loyalty in Thailand (5021133)
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-12">Author(s): Kobthong Ladkoom, Bundit Thanasopon</div>
-              <div class="col">Page(s): 5</div>
-            </div>
-            <div class="row">
-              <div class="col-md-10">Price: 18,000 THB / 580 USD</div>
-              <div class="col-md-2">
-                <div class="form-group">
-                  <div class="custom-control custom-checkbox small">
-                    <input type="checkbox" class="custom-control-input" id="customCheck2">
-                    <label class="custom-control-label" for="customCheck2">Pay for this article</label>
+                    <input
+                      type="checkbox"
+                      class="custom-control-input"
+                      :id="article.id"
+                      v-model="article.check"
+                      @change="select(article)"
+                    >
+                    <label class="custom-control-label" :for="article.id">Pay for this article</label>
                   </div>
                 </div>
               </div>
@@ -68,37 +54,56 @@
                 <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Remark</th>
                   <th>Price</th>
                   <th>Amount</th>
                   <th>Total</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                  <td>Attendant (observer)</td>
-                  <td>-</td>
-                  <td width="15%">6,000 THB<br/>200 USD</td>
-                  <td>
-                    <input type="number" class="form-control" id="amount1" value="2">
+                <tr v-for="addition in additions">
+                  <td width="40%">[[ addition.name ]]</td>
+                  <td width="20%">[[ addition.price ]] THB<br/>[[ addition.price_us ]] USD</td>
+                  <td width="10%">
+                    <input
+                      type="number"
+                      class="form-control"
+                      min="0"
+                      max="99"
+                      v-model="addition.amount"
+                      :readonly="!addition.can_edit"
+                    >
                   </td>
-                  <td width="15%">12,000 THB<br/>400 USD</td>
-                </tr>
-                <tr>
-                  <td>Additional banquet ticket</td>
-                  <td>The banquet will be held at Siam Paragon.</td>
-                  <td width="15%">1,500 THB<br/>50 USD</td>
-                  <td>
-                    <input type="number" class="form-control" id="amount2" value="2">
-                  </td>
-                  <td width="15%">3,000 THB<br/>100 USD</td>
+                  <td width="20%">[[ addition.total ]] THB<br/>[[ addition.total_us ]] USD</td>
                 </tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-
+        <!-- Remark box -->
+        <div class="row">
+          <div class="col mb-4">
+            <div class="card border-left-primary shadow h-100">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-7">
+                    <div class="form-group">
+                      <label for="addressTxt">Address</label>
+                      <textarea class="form-control" id="addressTxt" v-model="address" maxlength="255" rows="3"></textarea>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="form-group">
+                    <label for="remarkTxt">Remark</label>
+                    <textarea class="form-control" id="remarkTxt" v-model="remark" maxlength="200" rows="3"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Summary box -->
         <div class="row">
           <div class="col mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
@@ -109,45 +114,200 @@
                   </div>
                   <div class="col-5 mr-2">
                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Price:</div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">33,000 THB or 1,080 USD</div><br/>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">[[total]] THB or [[total_us]] USD</div><br/>
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1" checked>
+                      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" v-model="currency" value="THB">
                       <label class="form-check-label" for="inlineRadio1">Pay in THB</label>
                     </div>
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+                      <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" v-model="currency" value="USD">
                       <label class="form-check-label" for="inlineRadio2">Pay in USD</label>
                     </div>
                   </div>
                   <div class="col mr-1">
-                    <input type="submit" class="btn btn-info btn-lg" value="Pay by Credit Card">
+                    <input type="button" class="btn btn-info btn-lg" value="Pay by Credit Card" @click="submit('C')">
                   </div>
                   <div class="col mr-1">
-                    <input type="button" class="btn btn-warning btn-lg" value="Bank Transfer">
+                    <input type="button" class="btn btn-warning btn-lg" value="Bank Transfer" @click="submit('T')">
                   </div>
-
+                </div>
+                <div class="row pt-3" v-show="errorMsg">
+                  <div class="col">
+                    <span class="text-danger">[[errorMsg]]</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <!--<div class="col-md-6 mb-4">
-              <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center pt-3 pb-4">
-                    <div class="col mr-2">
-                      <input type="submit" class="btn btn-info btn-lg" value="Pay by Credit Card">
-                    </div>
-                    <div class="col-auto">
-                      <input type="button" class="btn btn-warning btn-lg" value="Bank Transfer">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>-->
         </div>
-
       </div>
     </div>
   </form>
+  </div>
 {% endblock %}
 
+{% block script %}
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    const app = new Vue({
+      el: '#app',
+      delimiters: ["[[","]]"],
+      data: {
+        articles: [],
+        additions: [],
+        remark: '',
+        address: '',
+        is_early: false,
+        currency: 'THB',
+        errorMsg: ''
+      },
+      created(){
+        let self = this;
+        // Call API to get article list
+        axios.get('/api/payment/article-list/')
+        .then(function (response) {
+          // handle success
+          console.log(response.data);
+          self.articles = response.data.articles;
+          self.is_early = response.data.is_early;
+        })
+        .catch(function (error) {
+          // handle error
+          console.log(error.response);
+        })
+        .finally(function () {
+          // always executed
+        })
+
+        // Call API to get additional payment
+        axios.get('/api/payment/addition-list/')
+        .then(function (response) {
+          // handle success
+          self.additions = response.data;
+          // Map เพื่อ initial ค่า
+          self.additions = self.additions.map(
+            obj=> ({ ...obj, amount: 0, total: 0,  total_us: 0, article: -1})
+          );
+        })
+        .catch(function (error) {
+          // handle error
+          console.log(error.response);
+        })
+        .finally(function () {
+          // always executed
+        })
+      },
+      watch: {
+        additions: {
+          handler: function(newAdditions) {
+            newAdditions.forEach((e) => {
+              e.total = e.price * e.amount;
+              e.total_us = e.price_us * e.amount;
+            })
+          },
+          deep: true //set to true to enable deep watch
+        }
+      },
+      computed: {
+        total: function(){
+          return this.additions.reduce(
+            function(total, addition) {
+              return total + addition.total;
+            }, 0
+          );
+        },
+        total_us: function() {
+          return this.additions.reduce(
+            function (total, addition) {
+              return total + addition.total_us;
+            }, 0
+          );
+        }
+      },
+      methods: {
+        select: function (article) {
+          let mainPaper = this.additions.find((obj) => {
+              return obj.name === 'Main paper';
+            });
+
+          let addPaper = this.additions.find((obj) => {
+              return obj.name === 'Additional paper(s)';
+            });
+
+          let extraPage = this.additions.find((obj) => {
+              return obj.name === 'Extra page(s)';
+            });
+
+          if (article.check){
+            if (mainPaper.amount === 1){
+              addPaper.amount += 1;
+              addPaper.article = article.id;
+            }else{
+              mainPaper.amount = 1;
+              mainPaper.article = article.id;
+            }
+
+            if (article.page_no > 6){
+              extraPage.amount += article.page_no - 6
+            }
+          }else{
+            if (addPaper.amount > 0){
+              addPaper.amount -= 1;
+              addPaper.article = -1;
+            }else{
+              mainPaper.amount = 0;
+              mainPaper.article = -1;
+            }
+
+            if (article.page_no > 6){
+              extraPage.amount -= article.page_no - 6
+            }
+          }
+
+          if (this.is_early){
+            let early = this.additions.find((obj) => {
+              return obj.name === 'Early bird discount';
+            });
+            early.amount = mainPaper.amount + addPaper.amount;
+          }
+        },
+        submit: function (method) {
+          // CSRF Token
+          let csrftoken = Cookies.get('csrftoken');
+          let headers = {'X-CSRFTOKEN': csrftoken};
+          let self = this;
+          // Call API to submit -> create new payment
+          let data = {
+            products: this.additions.filter((e) => (e.amount > 0)),
+            address: this.address,
+            remark: this.remark,
+            method: method,
+            currency: this.currency,
+          };
+          axios.post('/api/payment/create/', data, {headers: headers})
+          .then(function (response) {
+            // handle success
+            console.log(response.data);
+            let pay = response.data
+            // redirect -> credit card or transfer page
+            if (method === 'T'){
+              window.location.replace(`/regist/payment/${pay.id}/detail/`);
+            }else if (method === 'C'){
+
+            }
+
+          })
+          .catch(function (error) {
+            // handle error
+            console.log(error.response.data);
+            self.errorMsg = error.response.data;
+          })
+          .finally(function () {
+            // always executed
+          })
+        }
+      }
+    })
+  </script>
+{% endblock %}

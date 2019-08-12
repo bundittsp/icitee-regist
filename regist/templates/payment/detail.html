@@ -1,0 +1,152 @@
+{% extends 'layout/base.html' %}
+{% load multiply %}
+
+{% block title %}
+  Payment No.: {{ payment.code }}
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Payment Detail</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-lg-4"><strong>Order no.:</strong> {{ payment.code }}</div>
+            <div class="col-12 col-lg-4"><strong>Created date:</strong> {{ payment.create_date }}</div>
+            <div class="col-12 col-lg-4"><strong>Created by:</strong> {{ payment.create_by.get_full_name }}</div>
+          </div>
+          <div class="row">
+            <div class="col"><strong>Address:</strong> {{ payment.address|default:'-' }}</div>
+          </div>
+          <div class="row">
+            <div class="col"><strong>Remark:</strong> {{ payment.remark|default:'-' }}</div>
+          </div>
+          <div class="row">
+            <div class="col-12 col-lg-4"><strong>Method:</strong> {{ payment.get_method_text }}</div>
+            <div class="col-12 col-lg-4"><strong>Payment slip:</strong> ...</div>
+            <div class="col-12 col-lg-4"><strong>Is confirmed?:</strong> {{ payment.confirm }}</div>
+          </div>
+        <br>
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Amount</th>
+                <th>Total</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% if payment.paymentitem_set %}
+                {% for item in payment.paymentitem_set.all %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>
+                    {{ item.add_item.name }}
+                    {% if item.article %}
+                      <br><small>{{ item.article.title }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.price > 0 %}
+                      {{ item.price }} THB
+                    {% elif item.price_us > 0 %}
+                      {{ item.price_us }} USD
+                    {% endif %}
+                  </td>
+                  <td>{{ item.amount }}</td>
+                  <td>
+                    {% if item.price > 0 %}
+                      {{ item.price|multiply:item.amount }} THB
+                    {% elif item.price_us > 0 %}
+                      {{ item.price_us|multiply:item.amount }} USD
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="7">No data</td>
+                </tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+                <br>
+
+          <div class="row">
+            <div class="col">
+              {% if not payment.confirm %}
+                <a href="#" class="btn btn-primary">Pay by Credit Card</a>
+              {% else %}
+                <a href="#" class="btn btn-info">Print Payment Confirmation</a>
+              {% endif %}
+              <!--<a href="#" class="btn btn-warning">Print Receipt</a>-->
+            </div>
+          </div>
+
+        </div>
+      </div>
+      {% if not payment.confirm %}
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">How to Pay by Bank Transfer</h6>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Transfer the registration fee to:</h5>
+                <small>STEP 1</small>
+              </div>
+              <p class="mb-1">
+                <ul>
+                  <li>Bank: Siam Commercial Bank</li>
+                  <li>Account No.: 12345 (IT KMITL)</li>
+                  <li>EBAN: 123456</li>
+                </ul>
+              </p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Upload the transfer slip here:</h5>
+                <small class="text-muted">STEP 2</small>
+              </div>
+              <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+                <p class="mb-1">
+                  {{ form.file }}
+                  {{ form.file.errors }}
+                  <small class="text-muted"> **.jpg, .png or .pdf file extensions only</small><br/>
+                  <input type="submit" value="Upload" class="btn btn-primary mt-2">
+                </p>
+              </form>
+            </a>
+            {% if payment.slip %}
+              <a href="{{ payment.slip }}" class="list-group-item list-group-item-action text-primary" download>
+                Uploaded slip: <u>{{ payment.slip }}</u>
+              </a>
+            {% endif %}
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Check your payment status</h5>
+                <small class="text-muted">STEP 3</small>
+              </div>
+              <p class="mb-1">
+                You can check whether your payment is confirmed or not on this website.
+                The process usually takes 1-2 days.
+              </p>
+              <small class="text-muted">If you have any problems with the payment, please contact us at icitee2019@it.kmitl.ac.th</small>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

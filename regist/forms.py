@@ -1,3 +1,6 @@
+import os
+from uuid import uuid4
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -10,6 +13,41 @@ class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
         fields = '__all__'
+
+
+
+
+
+
+class UploadSlipForm(forms.Form):
+    file = forms.FileField()
+
+    def __init__(self, *args, **kwargs):
+        super(UploadSlipForm, self).__init__(*args, **kwargs)
+        self.fields['file'].widget.attrs.update({'class': 'form-control', 'accept': '.jpg, .png, .pdf'})
+
+
+class SearchPaymentForm(forms.Form):
+    name_text = forms.CharField(max_length=200, required=False)
+    METHODS = (
+        ('', '--------'),
+        ('C', 'Credit Card'),
+        ('T', 'Bank Transfer'),
+    )
+    method = forms.ChoiceField(choices=METHODS, required=False)
+    CURRENCIES = [
+        ('', '-----'),
+        ('THB', 'THB'),
+        ('USD', 'USD')
+    ]
+    currency = forms.ChoiceField(choices=CURRENCIES, required=False)
+    confirm = forms.BooleanField(initial=False, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(SearchPaymentForm, self).__init__(*args, **kwargs)
+        self.fields['name_text'].widget.attrs.update({'class': 'form-control', 'placeholder': 'EDAS ID, Title'})
+        self.fields['method'].widget.attrs.update({'class': 'form-control'})
+        self.fields['currency'].widget.attrs.update({'class': 'form-control'})
 
 
 class MyUserCreationForm(UserCreationForm):

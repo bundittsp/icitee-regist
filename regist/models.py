@@ -1,3 +1,6 @@
+import os
+from uuid import uuid4
+
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -25,6 +28,8 @@ class Article(models.Model):
             return "Not paid"
 
 
+# TODO ตอน import ข้อมูลมากจาก EDAS ต้องมาสร้าง user และ author ไว้เลย
+# TODO ต้องสร้างหน้า import csv!!!
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     COUNTRIES = (
@@ -282,16 +287,33 @@ class Author(models.Model):
     ieee = models.CharField(max_length=20, blank=True, null=True)
     is_ugm = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.user.get_full_name()
+
 
 class AdditionalItem(models.Model):
     name = models.CharField(max_length=50)
     remark = models.CharField(max_length=200, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     price_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    can_edit = models.BooleanField(default=False)
+
+
+def path_and_rename(instance, filename):
+    upload_to = 'regist/static/slips/' + instance.code + '/'
+    ext = filename.split('.')[-1]
+    # get filename
+    if instance.pk:
+        filename = '{}.{}'.format(instance.pk, ext)
+    else:
+        # set filename as random string
+        filename = '{}.{}'.format(uuid4().hex, ext)
+    # return the whole path to the file
+    return os.path.join(upload_to, filename)
 
 
 class Payment(models.Model):
-    code = models.CharField(max_length=20)
+    code = models.CharField(max_length=20, blank=True, null=True)
     remark = models.CharField(max_length=200, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     METHODS = (
@@ -299,26 +321,23 @@ class Payment(models.Model):
         ('T', 'Bank Transfer'),
     )
     method = models.CharField(max_length=1, choices=METHODS)
-    slip = models.ImageField(upload_to='slips/', null=True, blank=True)
+    currency = models.CharField(max_length=3, default='THB')
+    slip = models.ImageField(upload_to=path_and_rename, null=True, blank=True)
     confirm = models.BooleanField(default=False)
     del_flag = models.BooleanField(default=False)
     create_date = models.DateTimeField(auto_now_add=True)
     delete_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     create_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_create_by')
-    delete_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_delete_by')
+    delete_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_delete_by', blank=True, null=True)
 
     def get_method_text(self):
-        return [t for t in self.METHODS if t[0] == self.method]
+        return [t[1] for t in self.METHODS if t[0] == self.method][0]
 
 
 class PaymentItem(models.Model):
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE)
-    article = models.ForeignKey(Article, on_delete=models.PROTECT)
+    article = models.ForeignKey(Article, on_delete=models.PROTECT, blank=True, null=True)
     add_item = models.ForeignKey(AdditionalItem, on_delete=models.PROTECT)
+    amount = models.IntegerField(default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    CURRENCIES = (
-        ('THB', 'Thai Baht'),
-        ('USD', 'US Dollar'),
-    )
-    currency = models.CharField(max_length=3, choices=CURRENCIES)
+    price_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

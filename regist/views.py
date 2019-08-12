@@ -1,23 +1,26 @@
 import string
 import random
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
+from django.db.models import Q, Sum, F, DecimalField
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import EmailMessage
 
 # Create your views here.
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.views import View
 
-from regist.forms import PaymentForm, AuthorForm, UserForm, MyUserCreationForm
+from regist.forms import AuthorForm, UserForm, MyUserCreationForm, SearchPaymentForm, UploadSlipForm
 from regist.models import Article, Payment
 from regist.tokens import account_activation_token
 
 
+# TODO ต้องมาแก้ไขให้เวลา regist คือต้องดูจาก edas_id ของ User ที่สร้างไว้แล้วเท่านั้น
 def register(request):
     success = False
     if request.method == 'POST':
@@ -117,7 +120,12 @@ def forget_password(request):
 def index(request):
     articles = Article.objects.filter(authors__id=request.user.id)
 
-    payments = Payment.objects.filter(create_by=request.user)
+    payments = Payment.objects.filter(create_by=request.user, del_flag=False).annotate(
+        total=Sum(F('paymentitem__price') * F('paymentitem__amount'),
+                  output_field=DecimalField(max_digits=10, decimal_places=2)),
+        total_us=Sum(F('paymentitem__price_us') * F('paymentitem__amount'),
+                     output_field=DecimalField(max_digits=10, decimal_places=2)),
+    )
 
     return render(
         request,
@@ -129,6 +137,105 @@ def index(request):
     )
 
 
+# มติ อัตราค่าลงทะเบียนให้ใช้อัตราเดียวกับ ICITEE 2017 และ ICITEE 2015 ซึ่งทั้ง 2 ครั้งนั้นใช้อัตราเดียวกัน
+# โดยให้ประกาศอัตราทั้งหน่วยเงินบาท และ US$ ดังนี้
+# - Early bird registration	IEEE/ECTI Member = 12,000 / Non- IEEE/ECTI Member = 14,000
+# - Regular registration	IEEE/ECTI Member = 14,000 / Non- IEEE/ECTI Member = 16,000
+# - Additional paper = 12,000
+# - Extra page (each additional, max. 2 pages) = 2,000
+# - Attendant (observer) = 6,000
+# - Additional Banquet ticket = 1,500
+# ส่วน Special rate สำหรับ UGM กำหนดอัตรา Flat rate 10,000 บาท โดยแจ้งเป็นการภายในให้ทราบเฉพาะ UGM เท่านั้น
+@login_required
+def payment(request):
+    return render(request, 'payment/payment.html')
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def payment_search(request):
+    form = SearchPaymentForm(request.GET)
+    if form.is_valid():
+        name = form.cleaned_data.get('name_text')
+        method = form.cleaned_data.get('method')
+        currency = form.cleaned_data.get('currency')
+        confirm = form.cleaned_data.get('confirm')
+
+        query = [Q(del_flag=False)]
+        if name:
+            query.append(
+                Q(paymentitem__article__edas_id=name) |
+                Q(paymentitem__article__title__icontain=name))
+        if method:
+            query.append(Q(method=method))
+        if currency:
+            query.append(Q(currency=currency))
+        if confirm:
+            query.append(Q(confirm=confirm))
+
+        payments = Payment.objects.filter(*query)
+    else:
+        payments = Payment.objects.all()
+
+    payments = payments.annotate(
+            total=Sum('paymentitem__price'), total_us=Sum('paymentitem__price_us')
+        ).values(
+            'id', 'code', 'total', 'total_us', 'method', 'slip', 'currency',
+            'create_by__first_name', 'create_by__last_name',
+            'create_date__date', 'confirm'
+        ).distinct()
+
+    return render(request, 'payment/search.html', context={
+        'form': form,
+        'payments': payments
+    })
+
+
+@login_required
+def payment_detail(request, payment_id):
+    payment = get_object_or_404(Payment, pk=payment_id)
+
+    if request.method == 'POST':
+        form = UploadSlipForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['file']
+            payment.slip = file
+            payment.save()
+    else:
+        form = UploadSlipForm()
+
+    if payment.slip:
+        payment.slip.name = payment.slip.name[7:]
+
+    return render(request, 'payment/detail.html', {
+        'form': form,
+        'payment': payment
+    })
+
+
+@login_required
+def print_confirm(request, payment_id):
+    payment = get_object_or_404(Payment, pk=payment_id, del_flag=False)
+    total = payment.paymentitem_set.all().aggregate(sum_thb=Sum('price'), sum_usd=Sum('price_us'))
+
+    return render(request, 'payment/print/confirm.html', {
+        'payment': payment,
+        'total': total['sum_thb'],
+        'total_us': total['sum_usd'],
+    })
+
+
+@login_required
+def payment_delete(request, payment_id):
+    pay = get_object_or_404(Payment, pk=payment_id, del_flag=False)
+    pay.del_flag = True
+    pay.delete_by = request.user
+    pay.save()
+
+    return redirect('index')
+
+
+@method_decorator(login_required, name='dispatch')
 class ProfileView(View):
     template_name = 'profile/profile.html'
 
@@ -160,37 +267,3 @@ class ProfileView(View):
             'author_form': author_form,
             'success': success
         })
-
-
-# มติ อัตราค่าลงทะเบียนให้ใช้อัตราเดียวกับ ICITEE 2017 และ ICITEE 2015 ซึ่งทั้ง 2 ครั้งนั้นใช้อัตราเดียวกัน
-# โดยให้ประกาศอัตราทั้งหน่วยเงินบาท และ US$ ดังนี้
-# - Early bird registration	IEEE/ECTI Member = 12,000 / Non- IEEE/ECTI Member = 14,000
-# - Regular registration	IEEE/ECTI Member = 14,000 / Non- IEEE/ECTI Member = 16,000
-# - Additional paper = 12,000
-# - Extra page (each additional, max. 2 pages) = 2,000
-# - Attendant (observer) = 6,000
-# - Additional Banquet ticket = 1,500
-# ส่วน Special rate สำหรับ UGM กำหนดอัตรา Flat rate 10,000 บาท โดยแจ้งเป็นการภายในให้ทราบเฉพาะ UGM เท่านั้น
-class PaymentView(View):
-    form_class = PaymentForm
-    template_name = 'payment/payment.html'
-
-    def get(self, request, *args, **kwargs):
-        articles = Article.objects.filter(authors__id=request.user.id, is_paid=False)
-
-        form = self.form_class()
-
-        return render(request, self.template_name, {
-            'form': form,
-            'articles': articles,
-
-        })
-
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            # <process form cleaned data>
-            return render(request, 'payment/credit.html', {'form': form})
-
-        return render(request, 'payment/credit.html', {'form': form})
-
