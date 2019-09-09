@@ -25,11 +25,14 @@
             <div class="col"><strong>Remark:</strong> {{ payment.remark|default:'-' }}</div>
           </div>
           <div class="row">
-            <div class="col-12 col-lg-4"><strong>Method:</strong> {{ payment.get_method_text }}</div>
-            <div class="col-12 col-lg-4"><strong>Payment slip:</strong>
+            <div class="col-6 col-lg-3"><strong>Method:</strong> {{ payment.get_method_text }}</div>
+            <div class="col-6 col-lg-3"><strong>Payment slip:</strong>
               {% if payment.slip %}<a href="/{{ payment.slip.url }}" target="_blank">Uploaded</a>{% else %}-{% endif %}
             </div>
-            <div class="col-12 col-lg-4"><strong>Is confirmed?:</strong> {{ payment.confirm }}</div>
+            <div class="col-6 col-lg-3"><strong>IEEE/ECTI:</strong>
+              {% if payment.ieee %}<a href="/{{ payment.ieee.url }}" target="_blank">Uploaded</a>{% else %}{{ payment.member }}{% endif %}
+            </div>
+            <div class="col-6 col-lg-3"><strong>Confirmed?:</strong> {{ payment.confirm }}</div>
           </div>
         <br>
         <div class="table-responsive">
@@ -136,16 +139,28 @@
               <form method="POST" enctype="multipart/form-data">
               {% csrf_token %}
                 <p class="mb-1">
-                  {{ form.file }}
-                  {{ form.file.errors }}
+                  Upload payment slip:
+                  {{ form.slip }}
+                  {{ form.slip.errors }}
                   <small class="text-muted"> **.jpg, .png or .pdf file extensions only</small><br/>
-                  <input type="submit" value="Upload" class="btn btn-primary mt-2">
                 </p>
+                <p class="mb-1">
+                  Upload IEEE document (optional):
+                  {{ form.ieee }}
+                  {{ form.ieee.errors }}
+                  <small class="text-muted"> **.jpg, .png or .pdf file extensions only</small><br/>
+                </p>
+                <p class="mb-1"><input type="submit" value="Upload" class="btn btn-primary mt-2"></p>
               </form>
             </a>
             {% if payment.slip %}
               <a href="/{{ payment.slip.url }}" class="list-group-item list-group-item-action text-primary" target="_blank">
-                Uploaded slip: <u>{{ payment.slip }}</u>
+                Uploaded payment slip: <u>{{ payment.slip }}</u>
+              </a>
+            {% endif %}
+          {% if payment.ieee %}
+              <a href="/{{ payment.ieee.url }}" class="list-group-item list-group-item-action text-primary" target="_blank">
+                Uploaded IEEE document: <u>{{ payment.ieee }}</u>
               </a>
             {% endif %}
             <a href="#" class="list-group-item list-group-item-action">

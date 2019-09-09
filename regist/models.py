@@ -297,7 +297,9 @@ class AdditionalItem(models.Model):
     name = models.CharField(max_length=50)
     remark = models.CharField(max_length=200, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    early_disc = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     price_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    early_disc_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     can_edit = models.BooleanField(default=False)
 
 
@@ -324,6 +326,7 @@ class Payment(models.Model):
     )
     method = models.CharField(max_length=1, choices=METHODS)
     currency = models.CharField(max_length=3, default='THB')
+    member = models.BooleanField(default=False)
     slip = models.ImageField(upload_to=path_and_rename, null=True, blank=True)
     ieee = models.ImageField(upload_to=path_and_rename, null=True, blank=True)
     confirm = models.BooleanField(default=False)

@@ -44,3 +44,7 @@ local.py
 
 # Environments variable
 src/env.py
+*.jpeg
+*.jpg
+*.pdf
+*.png

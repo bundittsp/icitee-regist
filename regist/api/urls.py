@@ -10,6 +10,4 @@ urlpatterns = [
 
     path('payment/article-list/', views.ArticleListAPIView.as_view(), name='article-list'),
     path('payment/addition-list/', views.AdditionalItemListAPIView.as_view(), name='addition-list'),
-
-
 ]

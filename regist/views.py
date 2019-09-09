@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
-from django.db.models import Q, Sum, F, DecimalField
+from django.db.models import Q, Sum, F, DecimalField, FloatField
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import EmailMessage
@@ -17,7 +18,7 @@ from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from regist.forms import AuthorForm, UserForm, SearchPaymentForm, UploadSlipForm
+from regist.forms import AuthorForm, UserForm, SearchPaymentForm, UploadFileForm
 from regist.models import Article, Payment, Author
 from regist.tokens import account_activation_token
 
@@ -198,26 +199,34 @@ def payment_search(request):
 def payment_detail(request, payment_id):
     payment = get_object_or_404(Payment, pk=payment_id)
     if payment.currency == 'THB':
-        total_price = payment.paymentitem_set.aggregate(Sum('price'))['price__sum']
+        total_price = payment.paymentitem_set.aggregate(
+            total=Coalesce(Sum(F('price') * F('amount'), output_field=FloatField()), 0)
+        )
     elif payment.currency == 'USD':
-        total_price = payment.paymentitem_set.aggregate(Sum('price_us'))['price_us__sum']
+        total_price = payment.paymentitem_set.aggregate(
+            total=Coalesce(Sum(F('price_us') * F('amount'), output_field=FloatField()), 0)
+        )
 
     if request.method == 'POST':
-        form = UploadSlipForm(request.POST, request.FILES)
+        form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            file = request.FILES['file']
-            payment.slip = file
+            slip = request.FILES.get('slip', None)
+            ieee = request.FILES.get('ieee', None)
+            if slip: payment.slip = slip
+            if ieee: payment.ieee = ieee
             payment.save()
     else:
-        form = UploadSlipForm()
+        form = UploadFileForm()
 
     if payment.slip:
         payment.slip.name = payment.slip.name[7:]
+    if payment.ieee:
+        payment.ieee.name = payment.ieee.name[7:]
 
     return render(request, 'payment/detail.html', {
         'form': form,
         'payment': payment,
-        'total_price': total_price
+        'total_price': total_price['total']
     })
 
 

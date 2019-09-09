@@ -15,12 +15,14 @@ class PaymentForm(forms.ModelForm):
         fields = '__all__'
 
 
-class UploadSlipForm(forms.Form):
-    file = forms.FileField()
+class UploadFileForm(forms.Form):
+    slip = forms.FileField(required=False)
+    ieee = forms.FileField(required=False)
 
     def __init__(self, *args, **kwargs):
-        super(UploadSlipForm, self).__init__(*args, **kwargs)
-        self.fields['file'].widget.attrs.update({'class': 'form-control', 'accept': '.jpg, .png, .pdf'})
+        super(UploadFileForm, self).__init__(*args, **kwargs)
+        self.fields['slip'].widget.attrs.update({'class': 'form-control', 'accept': '.jpg, .png, .pdf'})
+        self.fields['ieee'].widget.attrs.update({'class': 'form-control', 'accept': '.jpg, .png, .pdf'})
 
 
 class SearchPaymentForm(forms.Form):

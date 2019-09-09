@@ -31,7 +31,7 @@
                       class="custom-control-input"
                       :id="article.id"
                       v-model="article.check"
-                      @change="select(article)"
+                      @change="recalculate"
                     >
                     <label class="custom-control-label" :for="article.id">Pay for this article</label>
                   </div>
@@ -46,6 +46,18 @@
             Additions
           </div>
           <div class="card-body">
+            <div class="form-group">
+                  <div class="custom-control custom-checkbox small">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                id="is_member"
+                v-model="is_member"
+                @change="recalculate"
+              >
+              <label class="custom-control-label" for="is_member">I am an IEEE/ECTI member.</label>
+                  </div>
+            </div>
             <div class="table-responsive">
               <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <thead>
@@ -59,7 +71,7 @@
                 <tbody>
                 <tr v-for="addition in additions">
                   <td width="40%">[[ addition.name ]]</td>
-                  <td width="20%">[[ addition.price ]] THB<br/>[[ addition.price_us ]] USD</td>
+                  <td width="20%">[[ addition.disc_price ]] THB<br/>[[ addition.disc_price_us ]] USD</td>
                   <td width="10%">
                     <input
                       type="number"
@@ -155,7 +167,7 @@
         additions: [],
         remark: '',
         address: '',
-        is_early: false,
+        is_member: false,
         currency: 'THB',
         errorMsg: ''
       },
@@ -166,8 +178,7 @@
         .then(function (response) {
           // handle success
           console.log(response.data);
-          self.articles = response.data.articles;
-          self.is_early = response.data.is_early;
+          self.articles = response.data;
         })
         .catch(function (error) {
           // handle error
@@ -199,8 +210,8 @@
         additions: {
           handler: function(newAdditions) {
             newAdditions.forEach((e) => {
-              e.total = e.price * e.amount;
-              e.total_us = e.price_us * e.amount;
+              e.total = e.disc_price * e.amount;
+              e.total_us = e.disc_price_us * e.amount;
             })
           },
           deep: true //set to true to enable deep watch
@@ -223,9 +234,19 @@
         }
       },
       methods: {
-        select: function (article) {
+        recalculate: function () {
+          // Reset all amount
+          this.additions.forEach(function (add) {
+            add.amount = 0;
+            add.article = -1;
+          });
+
           let mainPaper = this.additions.find((obj) => {
-              return obj.name === 'Main paper';
+              if (this.is_member) {
+                return obj.name === 'Main paper (member)';
+              }else{
+                return obj.name === 'Main paper (non-member)';
+              }
             });
 
           let addPaper = this.additions.find((obj) => {
@@ -236,38 +257,22 @@
               return obj.name === 'Extra page(s)';
             });
 
-          if (article.check){
-            if (mainPaper.amount === 1){
-              addPaper.amount += 1;
-              addPaper.article = article.id;
-            }else{
-              mainPaper.amount = 1;
-              mainPaper.article = article.id;
-            }
+          // Calculate main paper + additional paper amount
+          let check_count = this.articles.filter(article => article.check).length;
+          if (check_count > 0){
+            mainPaper.amount = 1;
+            addPaper.amount = check_count - 1;
 
-            if (article.page_no > 6){
-              extraPage.amount += article.page_no - 6
-            }
-          }else{
-            if (addPaper.amount > 0){
-              addPaper.amount -= 1;
-              addPaper.article = -1;
-            }else{
-              mainPaper.amount = 0;
-              mainPaper.article = -1;
-            }
-
-            if (article.page_no > 6){
-              extraPage.amount -= article.page_no - 6
-            }
           }
 
-          if (this.is_early){
-            let early = this.additions.find((obj) => {
-              return obj.name === 'Early bird discount';
-            });
-            early.amount = mainPaper.amount + addPaper.amount;
-          }
+          // Calculate extra page charge
+          this.articles.forEach(function (article) {
+            if (article.check){
+              if (article.page_no > 6){
+                extraPage.amount += article.page_no - 6
+              }
+            }
+          })
         },
         submit: function (method) {
           // CSRF Token
@@ -281,6 +286,8 @@
             remark: this.remark,
             method: method,
             currency: this.currency,
+            is_member: this.is_member,
+            selected: this.articles.filter(article => article.check).map(e => e.id)
           };
           axios.post('/api/payment/create/', data, {headers: headers})
           .then(function (response) {

@@ -30,6 +30,7 @@ class PaymentItemSerializer(serializers.ModelSerializer):
 
 
 class PaymentSerializer(serializers.ModelSerializer):
+    create_date = DateTimeFieldWihTZ(format='%Y-%m-%d %H:%M', read_only=True)
     paymentitem_set = PaymentItemSerializer(many=True, read_only=True)
 
     class Meta:
@@ -51,6 +52,9 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 
 class AdditionalItemSerializer(serializers.ModelSerializer):
+    disc_price = serializers.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    disc_price_us = serializers.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
     class Meta:
         model = AdditionalItem
         fields = ('__all__')
