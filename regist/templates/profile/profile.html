@@ -35,38 +35,29 @@
                   <strong>First Name</strong>
                 </div>
                 <div class="col-6 col-md-4">
-                  {{ user_form.first_name }}
-                  {{ user_form.first_name.errors }}
+                  {{ user.first_name }}
                 </div>
                 <div class="col-6 col-md-2">
                   <strong>Last Name</strong>
                 </div>
                 <div class="col-6 col-md-4">
-                  {{ user_form.last_name }}
-                  {{ user_form.last_name.errors }}
+                  {{ user.last_name }}user
                 </div>
               </div>
               <div class="row form-group">
                 <div class="col-6 col-md-2">
                   <strong>E-mail</strong>
                 </div>
-                <div class="col-6 col-md-4">
-                  {{ user_form.email }}
-                  {{ user_form.email.errors }}
-                </div>
-                <div class="col-6 col-md-2">
-                  <strong>IEEE No.</strong>
-                </div>
-                <div class="col-6 col-md-4">
-                  {{ author_form.ieee }}
-                  {{ author_form.ieee.errors }}
+                <div class="col-6 col-md-6">
+                  {{ user.email }}
+                  {{ user.email.errors }}
                 </div>
               </div>
               <div class="row form-group">
                 <div class="col-6 col-md-2">
                   <strong>Country</strong>
                 </div>
-                <div class="col-6 col-md-4">
+                <div class="col-6 col-md-6">
                   {{ author_form.country }}
                   {{ author_form.country.errors }}
                 </div>

@@ -26,7 +26,9 @@
           </div>
           <div class="row">
             <div class="col-12 col-lg-4"><strong>Method:</strong> {{ payment.get_method_text }}</div>
-            <div class="col-12 col-lg-4"><strong>Payment slip:</strong> ...</div>
+            <div class="col-12 col-lg-4"><strong>Payment slip:</strong>
+              {% if payment.slip %}<a href="/{{ payment.slip.url }}" target="_blank">Uploaded</a>{% else %}-{% endif %}
+            </div>
             <div class="col-12 col-lg-4"><strong>Is confirmed?:</strong> {{ payment.confirm }}</div>
           </div>
         <br>
@@ -53,22 +55,26 @@
                     {% endif %}
                   </td>
                   <td>
-                    {% if item.price > 0 %}
+                    {% if payment.currency == 'THB' %}
                       {{ item.price }} THB
-                    {% elif item.price_us > 0 %}
+                    {% elif payment.currency == 'USD' %}
                       {{ item.price_us }} USD
                     {% endif %}
                   </td>
                   <td>{{ item.amount }}</td>
                   <td>
-                    {% if item.price > 0 %}
+                    {% if payment.currency == 'THB' %}
                       {{ item.price|multiply:item.amount }} THB
-                    {% elif item.price_us > 0 %}
+                    {% elif payment.currency == 'USD' %}
                       {{ item.price_us|multiply:item.amount }} USD
                     {% endif %}
                   </td>
                 </tr>
                 {% endfor %}
+                <tr>
+                <td colspan="4" style="text-align: right;">Total</td>
+                <td>{{ total_price }} {{ payment.currency }}</td>
+                </tr>
               {% else %}
                 <tr>
                   <td colspan="7">No data</td>
@@ -82,9 +88,15 @@
           <div class="row">
             <div class="col">
               {% if not payment.confirm %}
-                <a href="#" class="btn btn-primary">Pay by Credit Card</a>
+                  {% if request.user.is_staff or request.user.is_superuser %}
+                  <a href="{% url 'payment-confirm' payment.id %}?confirm=true" class="btn btn-primary">Confirm Payment</a>
+                  {% endif %}
+                  <!--<a href="#" class="btn btn-primary">Pay by Credit Card</a>-->
               {% else %}
-                <a href="#" class="btn btn-info">Print Payment Confirmation</a>
+                  {% if request.user.is_staff or request.user.is_superuser %}
+                  <a href="{% url 'payment-confirm' payment.id %}?confirm=false" class="btn btn-primary">Undo Confirm Payment</a>
+                  {% endif %}
+                  <a href="{% url 'payment-print-confirm' payment.id %}" class="btn btn-info">Print Payment Confirmation</a>
               {% endif %}
               <!--<a href="#" class="btn btn-warning">Print Receipt</a>-->
             </div>
@@ -106,9 +118,13 @@
               </div>
               <p class="mb-1">
                 <ul>
-                  <li>Bank: Siam Commercial Bank</li>
-                  <li>Account No.: 12345 (IT KMITL)</li>
-                  <li>EBAN: 123456</li>
+                  <li>Bank: Kasikorn Bank</li>
+                  <li>Account No.: 059-3-49314-8</li>
+                  <li>Account Name: KMITL FOR ICITEE 2019</li>
+                  {% if request.user.author.country == 'TH' %}
+                  <li>Account Name (TH): สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง เพื่อการประชุมวิชาการ ICITEE 2019</li>
+                  {% endif %}
+                  <li>SWIFT CODE : KASITHBK</li>
                 </ul>
               </p>
             </a>
@@ -128,7 +144,7 @@
               </form>
             </a>
             {% if payment.slip %}
-              <a href="{{ payment.slip }}" class="list-group-item list-group-item-action text-primary" download>
+              <a href="/{{ payment.slip.url }}" class="list-group-item list-group-item-action text-primary" target="_blank">
                 Uploaded slip: <u>{{ payment.slip }}</u>
               </a>
             {% endif %}

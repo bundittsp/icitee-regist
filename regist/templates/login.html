@@ -8,7 +8,7 @@
   {% if form.errors %}
     <p>Your username and password didn't match. Please try again.</p>
   {% endif %}
-  <form method="POST" class="user">
+  <form method="POST" class="user" action="{% url 'login' %}">
   {% csrf_token %}
     <div class="form-group">
       <input type="text" name="username" class="form-control form-control-user" placeholder="Enter EDAS ID">

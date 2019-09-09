@@ -4,7 +4,6 @@ from pprint import pprint
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,7 +14,14 @@ from regist.models import AdditionalItem, Article
 class ArticleListAPIView(APIView):
 
     def get(self, request):
-        articles = Article.objects.filter(authors__id=request.user.id, is_paid=False, paymentitem__isnull=True)
+        articles = Article.objects.filter(authors__id=request.user.id, is_paid=False)
+        exclude_ids = []
+        for article in articles:
+            if article.paymentitem_set.filter(payment__del_flag=False).count() > 0:
+                exclude_ids.append(article.id)
+        print(exclude_ids)
+
+        articles = articles.exclude(id__in=exclude_ids)
         serializer = ArticleSerializer(articles, many=True)
 
         # Check is early bird

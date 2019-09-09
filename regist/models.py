@@ -18,7 +18,7 @@ class Article(models.Model):
     def get_authors_text(self):
         text = ''
         for author in self.authors.all():
-            text += author.get_full_name()
+            text += author.get_full_name() + '; '
         return text
 
     def get_status(self):
@@ -28,10 +28,8 @@ class Article(models.Model):
             return "Not paid"
 
 
-# TODO ตอน import ข้อมูลมากจาก EDAS ต้องมาสร้าง user และ author ไว้เลย
-# TODO ต้องสร้างหน้า import csv!!!
 class Author(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True)
     COUNTRIES = (
         ('AF', 'Afghanistan',),
         ('AX', 'Aland Islands',),
@@ -283,12 +281,16 @@ class Author(models.Model):
         ('ZM', 'Zambia',),
         ('ZW', 'Zimbabwe',),
     )
-    country = models.CharField(max_length=2, choices=COUNTRIES)
-    ieee = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=2, choices=COUNTRIES, blank=True, null=True)
     is_ugm = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.get_full_name()
+
+    def get_country_text(self):
+        for item in self.COUNTRIES:
+            if item[0] == self.country:
+                return item[1]
 
 
 class AdditionalItem(models.Model):
@@ -300,7 +302,7 @@ class AdditionalItem(models.Model):
 
 
 def path_and_rename(instance, filename):
-    upload_to = 'regist/static/slips/' + instance.code + '/'
+    upload_to = 'regist/static/uploads/' + instance.code + '/'
     ext = filename.split('.')[-1]
     # get filename
     if instance.pk:
@@ -323,6 +325,7 @@ class Payment(models.Model):
     method = models.CharField(max_length=1, choices=METHODS)
     currency = models.CharField(max_length=3, default='THB')
     slip = models.ImageField(upload_to=path_and_rename, null=True, blank=True)
+    ieee = models.ImageField(upload_to=path_and_rename, null=True, blank=True)
     confirm = models.BooleanField(default=False)
     del_flag = models.BooleanField(default=False)
     create_date = models.DateTimeField(auto_now_add=True)

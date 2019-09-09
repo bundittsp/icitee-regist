@@ -22,11 +22,8 @@
                   [[ author ]];
                 </template>
               </div>
-              <div class="col">Page(s): [[ article.page_no ]]</div>
-            </div>
-            <div class="row">
-              <div class="col-md-9">Price: [[ article.price ]] THB / [[ article.price_us ]] USD</div>
-              <div class="col-md-3">
+              <div class="col-md-8">Page(s): [[ article.page_no ]]</div>
+              <div class="col-md-4">
                 <div class="form-group">
                   <div class="custom-control custom-checkbox small">
                     <input
@@ -125,7 +122,7 @@
                     </div>
                   </div>
                   <div class="col mr-1">
-                    <input type="button" class="btn btn-info btn-lg" value="Pay by Credit Card" @click="submit('C')">
+                    <!--<input type="button" class="btn btn-info btn-lg" value="Pay by Credit Card" @click="submit('C')">-->
                   </div>
                   <div class="col mr-1">
                     <input type="button" class="btn btn-warning btn-lg" value="Bank Transfer" @click="submit('T')">

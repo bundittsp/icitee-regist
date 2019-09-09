@@ -1,0 +1,25 @@
+{% extends 'admin/base.html' %}
+
+{% block content_title %}
+  <h3>Upload initial data from EDAS</h3>
+{% endblock %}
+
+{% block content %}
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile" accept=".csv">
+    <button type="submit">Upload</button>
+  </form>
+  <p>
+    You can upload only in .csv format
+  </p>
+  <br/><br/>
+
+  {% if error %}
+    <p>Error: {{ error }}</p>
+    {% else %}
+    <p>Data is successfully uploaded!</p>
+  {% endif %}
+
+{% endblock %}

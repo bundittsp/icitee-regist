@@ -19,7 +19,6 @@
                 <th>EDAS Paper No.</th>
                 <th>Paper Title</th>
                 <th>Author(s)</th>
-                <th>Fee (THB / USD)</th>
                 <th>Status</th>
               </tr>
               </thead>
@@ -30,7 +29,6 @@
                   <td>{{ article.edas_id }}</td>
                   <td>{{ article.title }}</td>
                   <td>{{ article.get_authors_text }}</td>
-                  <td>{{ article.price }} / {{ article.price_us }}</td>
                   <td>{{ article.get_status }}</td>
                 </tr>
                 {% endfor %}

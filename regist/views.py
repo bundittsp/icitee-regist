@@ -1,10 +1,12 @@
 import string
 import random
+from distutils.util import strtobool
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ValidationError
 from django.db.models import Q, Sum, F, DecimalField
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -15,57 +17,51 @@ from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from regist.forms import AuthorForm, UserForm, MyUserCreationForm, SearchPaymentForm, UploadSlipForm
-from regist.models import Article, Payment
+from regist.forms import AuthorForm, UserForm, SearchPaymentForm, UploadSlipForm
+from regist.models import Article, Payment, Author
 from regist.tokens import account_activation_token
 
 
-# TODO ต้องมาแก้ไขให้เวลา regist คือต้องดูจาก edas_id ของ User ที่สร้างไว้แล้วเท่านั้น
 def register(request):
     success = False
     if request.method == 'POST':
-        form = MyUserCreationForm(request.POST)
-        user_form = UserForm(request.POST)
-        author_form = AuthorForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            if user_form.is_valid():
-                user.email = user_form.cleaned_data.get('email')
-                user.first_name = user_form.cleaned_data.get('first_name')
-                user.last_name = user_form.cleaned_data.get('last_name')
-                user.is_staff = False
-                user.is_superuser = False
-                user.is_active = False
-                if author_form.is_valid():
-                    user.save()
-                    author = author_form.save(commit=False)
-                    author.user = user
-                    author.save()
-                    success = True
-                    # Send email with a link to activate account!!!
-                    current_site = get_current_site(request)
-                    subject = 'ICITEE2019 - account activation'
-                    message = render_to_string('email/acc_active_email.html', {
-                        'user': user,
-                        'domain': current_site.domain,
-                        'uid': user.pk,
-                        'token': account_activation_token.make_token(user),
-                    })
+        user = User.objects.get(username=request.POST.get('username').strip())
+        if user and not user.is_active:
+            form = UserForm(request.POST, instance=user)
+            if form.is_valid():
+                success = True
+                # Send email with a link to activate account!!!
+                letters_and_digits = string.ascii_letters + string.digits
+                password = ''.join(random.choice(letters_and_digits) for i in range(8))
+                # Update user password
+                user.set_password(password)
+                user.save()
+                current_site = get_current_site(request)
+                subject = 'ICITEE2019 - account activation'
+                message = render_to_string('email/acc_active_email.html', {
+                    'user': user,
+                    'password': password,
+                    'domain': current_site.domain,
+                    'uid': user.pk,
+                    'token': account_activation_token.make_token(user),
+                })
 
-                    email = EmailMessage(
-                        subject, message, to=[user.email]
-                    )
-                    email.send()
+                email = EmailMessage(
+                    subject, message, to=[user.email]
+                )
+                email.send()
+        elif user and user.is_active:
+            form = UserForm(request.POST, instance=user)
+            form.add_error(field=None, error=ValidationError('The account has already been created.', code='invalid'))
+        else:
+            form = UserForm(request.POST)
+            form.add_error(field=None, error=ValidationError('Cannot find a matching record.', code='invalid'))
     else:
-        form = MyUserCreationForm()
-        user_form = UserForm()
-        author_form = AuthorForm()
+        form = UserForm()
 
     return render(request, 'register.html',
                   {
                       'form': form,
-                      'author_form': author_form,
-                      'user_form': user_form,
                       'success': success
                   })
 
@@ -77,7 +73,14 @@ def activate(request, uid, token):
         user = None
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
+
+        try:
+            author = user.author
+        except Author.DoesNotExist:
+            user.author = Author.objects.create()
+
         user.save()
+
         login(request, user)
         return redirect('login')
     else:
@@ -152,7 +155,7 @@ def payment(request):
 
 
 @login_required
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_staff)
 def payment_search(request):
     form = SearchPaymentForm(request.GET)
     if form.is_valid():
@@ -194,6 +197,10 @@ def payment_search(request):
 @login_required
 def payment_detail(request, payment_id):
     payment = get_object_or_404(Payment, pk=payment_id)
+    if payment.currency == 'THB':
+        total_price = payment.paymentitem_set.aggregate(Sum('price'))['price__sum']
+    elif payment.currency == 'USD':
+        total_price = payment.paymentitem_set.aggregate(Sum('price_us'))['price_us__sum']
 
     if request.method == 'POST':
         form = UploadSlipForm(request.POST, request.FILES)
@@ -209,9 +216,26 @@ def payment_detail(request, payment_id):
 
     return render(request, 'payment/detail.html', {
         'form': form,
-        'payment': payment
+        'payment': payment,
+        'total_price': total_price
     })
 
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def payment_confirm(request, payment_id):
+    confirm = request.GET.get('confirm', 'false')
+    payment = get_object_or_404(Payment, pk=payment_id)
+    payment.confirm = strtobool(confirm)
+    payment.save()
+
+    # Update is_paid -> articles in payment
+    for item in payment.paymentitem_set.all():
+        if item.article:
+            item.article.is_paid = strtobool(confirm)
+            item.article.save()
+
+    return redirect('payment-detail', payment_id=payment_id)
 
 @login_required
 def print_confirm(request, payment_id):
@@ -241,29 +265,23 @@ class ProfileView(View):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        user_form = UserForm(instance=user)
         author_form = AuthorForm(instance=user.author)
 
         return render(request, self.template_name, {
             'user': user,
-            'user_form': user_form,
             'author_form': author_form
         })
 
     def post(self, request, *args, **kwargs):
         success = False
         user = request.user
-        user_form = UserForm(request.POST, instance=user)
         author_form = AuthorForm(request.POST, instance=user.author)
-        if user_form.is_valid():
-            user_form.save()
-            if author_form.is_valid():
-                author_form.save()
-                success = True
+        if author_form.is_valid():
+            author_form.save()
+            success = True
 
         return render(request, self.template_name, {
             'user': user,
-            'user_form': user_form,
             'author_form': author_form,
             'success': success
         })
