@@ -63,7 +63,7 @@ class UserForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Your EDAS ID*'})
+        self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Your EDAS ID (Author ID)*'})
         self.fields['email'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Your EDAS account email*'})
 
     def clean_email(self):
