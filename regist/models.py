@@ -7,7 +7,7 @@ from django.db import models
 
 class Article(models.Model):
     edas_id = models.CharField(max_length=20)
-    title = models.CharField(max_length=150)
+    title = models.CharField(max_length=255)
     remark = models.CharField(max_length=200, blank=True, null=True)
     page_no = models.IntegerField(blank=True, null=True)
     authors = models.ManyToManyField(User)

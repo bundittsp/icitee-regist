@@ -141,8 +141,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'bundit@it.kmitl.ac.th'
-EMAIL_HOST_PASSWORD = 'M@901PrAng'
+EMAIL_HOST_USER = 'icitee2019@it.kmitl.ac.th'
+EMAIL_HOST_PASSWORD = '2019@icitee'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
