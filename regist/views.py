@@ -74,13 +74,14 @@ def activate(request, uid, token):
         user = None
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
+        user.save()
 
         try:
             author = user.author
         except Author.DoesNotExist:
-            user.author = Author.objects.create()
-
-        user.save()
+            author = Author.objects.create()
+            author.user = user
+            author.save()
 
         login(request, user)
         return redirect('login')
