@@ -240,12 +240,31 @@ def payment_confirm(request, payment_id):
     payment.save()
 
     # Update is_paid -> articles in payment
+    articles = []
     for item in payment.paymentitem_set.all():
         if item.article:
             item.article.is_paid = strtobool(confirm)
             item.article.save()
+            articles.append(item.article)
+
+    # Send confirmation email
+    if strtobool(confirm):
+        subject = 'ICITEE2019 - payment confirmation'
+        current_site = get_current_site(request)
+        message = render_to_string('email/payment_confirm.html', {
+            'user': payment.create_by,
+            'domain': current_site.domain,
+            'articles': articles,
+            'payment_id': payment.id
+        })
+
+        email = EmailMessage(
+            subject, message, to=[payment.create_by.email]
+        )
+        email.send()
 
     return redirect('payment-detail', payment_id=payment_id)
+
 
 @login_required
 def print_confirm(request, payment_id):

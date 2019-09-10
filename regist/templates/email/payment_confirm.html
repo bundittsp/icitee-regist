@@ -1,0 +1,17 @@
+{% autoescape off %}
+  Hi {{ user.get_full_name }},
+
+  We would like to inform you that your registration for article(s) listed below is completed:
+  {% for article in articles %}
+    - {{ article.title }}
+  {% endfor %}
+
+  You can check the status of your registration at https://{{ domain }}{% url 'payment-detail' payment_id=payment_id %}.
+
+  See you in Pattaya!
+
+  Best regards,
+  ICITEE2019 Committee
+
+{% endautoescape %}
+
