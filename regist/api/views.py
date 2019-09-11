@@ -33,7 +33,7 @@ class AdditionalItemListAPIView(APIView):
     def get(self, request):
         articles = Article.objects.filter(authors__id=request.user.id, is_paid=False)
         # Check is early bird
-        is_early = date.today() <= date(2019, 9, 10)
+        is_early = date.today() <= date(2019, 9, 15)
         if is_early:
             additions = AdditionalItem.objects.all().annotate(
                 disc_price=F('price') - F('early_disc'),
