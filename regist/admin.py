@@ -13,7 +13,7 @@ from regist.models import Author, Article
 
 
 class AuthorAdmin(admin.ModelAdmin):
-    list_filter = ('user__is_active', 'is_ugm')
+    list_filter = ('user__is_active', 'country')
 
 
 admin.site.register(Author, AuthorAdmin)

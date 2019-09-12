@@ -283,6 +283,7 @@ class Author(models.Model):
     )
     country = models.CharField(max_length=2, choices=COUNTRIES, blank=True, null=True)
     is_ugm = models.BooleanField(default=False)
+    is_jcsi = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -298,8 +299,12 @@ class AdditionalItem(models.Model):
     remark = models.CharField(max_length=200, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     early_disc = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    ugm_disc = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    jsci_disc = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     price_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     early_disc_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    ugm_disc_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    jsci_disc_us = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     can_edit = models.BooleanField(default=False)
 
 

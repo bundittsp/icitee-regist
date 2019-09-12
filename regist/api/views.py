@@ -1,6 +1,4 @@
 from datetime import date
-from distutils.util import strtobool
-from pprint import pprint
 
 from django.db import transaction
 from django.db.models import Q, F
@@ -20,7 +18,6 @@ class ArticleListAPIView(APIView):
         for article in articles:
             if article.paymentitem_set.filter(payment__del_flag=False).count() > 0:
                 exclude_ids.append(article.id)
-        print(exclude_ids)
 
         articles = articles.exclude(id__in=exclude_ids)
         serializer = ArticleSerializer(articles, many=True)
@@ -31,19 +28,25 @@ class ArticleListAPIView(APIView):
 class AdditionalItemListAPIView(APIView):
 
     def get(self, request):
-        articles = Article.objects.filter(authors__id=request.user.id, is_paid=False)
         # Check is early bird
         is_early = date.today() <= date(2019, 9, 15)
-        if is_early:
-            additions = AdditionalItem.objects.all().annotate(
-                disc_price=F('price') - F('early_disc'),
-                disc_price_us=F('price_us') - F('early_disc_us')
-            )
-        else:
-            additions = AdditionalItem.objects.all().annotate(
-                disc_price=F('price'),
-                disc_price_us=F('price_us')
-            )
+        additions = AdditionalItem.objects.all().annotate(
+            disc_price=F('price'),
+            disc_price_us=F('price_us')
+        )
+
+        for addition in additions:
+            if is_early and not (request.user.author.is_ugm or request.user.author.is_jcsi):
+                addition.disc_price -= addition.early_disc
+                addition.disc_price_us -= addition.early_disc_us
+            else:
+                # ส่วนลด ugm และ jsci จะไม่สนใจ early bird จ่ายก่อนหรือหลังราคาเท่ากัน
+                if request.user.author.is_ugm:
+                    addition.disc_price -= addition.ugm_disc + addition.early_disc
+                    addition.disc_price_us -= addition.ugm_disc_us + addition.early_disc_us
+                if request.user.author.is_jcsi:
+                    addition.disc_price -= addition.jsci_disc + addition.early_disc
+                    addition.disc_price_us -= addition.jsci_disc_us + addition.early_disc_us
 
         serializer = AdditionalItemSerializer(additions, many=True)
 

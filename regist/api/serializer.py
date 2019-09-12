@@ -20,7 +20,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Author
-        fields = ('user', 'fname', 'lname', 'email', 'country', 'is_ugm')
+        fields = ('user', 'fname', 'lname', 'email', 'country')
 
 
 class PaymentItemSerializer(serializers.ModelSerializer):
