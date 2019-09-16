@@ -29,7 +29,7 @@ class AdditionalItemListAPIView(APIView):
 
     def get(self, request):
         # Check is early bird
-        is_early = date.today() <= date(2019, 9, 15)
+        is_early = date.today() <= date(2019, 9, 16)
         additions = AdditionalItem.objects.all().annotate(
             disc_price=F('price'),
             disc_price_us=F('price_us')
