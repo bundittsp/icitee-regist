@@ -1,6 +1,7 @@
 import string
 import random
 from distutils.util import strtobool
+from pprint import pprint
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
@@ -159,12 +160,15 @@ def payment(request):
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def payment_search(request):
+    from django.db import connection
     form = SearchPaymentForm(request.GET)
     if form.is_valid():
         name = form.cleaned_data.get('name_text')
         method = form.cleaned_data.get('method')
         currency = form.cleaned_data.get('currency')
         confirm = form.cleaned_data.get('confirm')
+        slip = form.cleaned_data.get('slip')
+        ieee = form.cleaned_data.get('ieee')
 
         query = [Q(del_flag=False)]
         if name:
@@ -175,8 +179,13 @@ def payment_search(request):
             query.append(Q(method=method))
         if currency:
             query.append(Q(currency=currency))
-        if confirm:
-            query.append(Q(confirm=confirm))
+        query.append(Q(confirm=confirm))
+        if slip:
+            query.append(~Q(slip__exact=''))
+            query.append(Q(slip__isnull=False))
+        if ieee:
+            query.append(~Q(ieee__exact=''))
+            query.append(Q(ieee__isnull=False))
 
         payments = Payment.objects.filter(*query)
     else:
@@ -189,6 +198,8 @@ def payment_search(request):
             'create_by__first_name', 'create_by__last_name',
             'create_date__date', 'confirm'
         ).distinct()
+
+    print(len(connection.queries))
 
     return render(request, 'payment/search.html', context={
         'form': form,

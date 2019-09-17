@@ -39,7 +39,9 @@ class SearchPaymentForm(forms.Form):
         ('USD', 'USD')
     ]
     currency = forms.ChoiceField(choices=CURRENCIES, required=False)
-    confirm = forms.BooleanField(initial=False, required=False)
+    confirm = forms.BooleanField(initial=False, required=False, label='Is confirmed?')
+    slip = forms.BooleanField(initial=False, required=False, label='Upload slip?')
+    ieee = forms.BooleanField(initial=False, required=False, label='IEEE membership?')
 
     def __init__(self, *args, **kwargs):
         super(SearchPaymentForm, self).__init__(*args, **kwargs)
