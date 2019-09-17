@@ -20,7 +20,7 @@
           <div class="row">
             <div class="col-12 col-lg-4"><strong>Order no.:</strong> {{ payment.code }}</div>
             <div class="col-12 col-lg-4"><strong>Created date:</strong> {{ payment.create_date }}</div>
-            <div class="col-12 col-lg-4"><strong>Created by:</strong> {{ payment.create_by.get_full_name }}</div>
+            <div class="col-12 col-lg-4"><strong>Created by:</strong> {{ payment.create_by.get_full_name }} ({{ payment.create_by.email }})</div>
           </div>
           <div class="row">
             <div class="col"><strong>Address:</strong> {{ payment.address|default:'-' }}</div>
