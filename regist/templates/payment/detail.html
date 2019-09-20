@@ -59,6 +59,14 @@
                     {{ item.add_item.name }}
                     {% if item.article %}
                       <br><small>{{ item.article.title }}</small>
+                      <br>
+                      <small>
+                        <strong>
+                        {% for author in item.article.authors.all %}
+                          {{ author.get_full_name }};&nbsp;
+                        {% endfor %}
+                        </strong>
+                      </small>
                     {% endif %}
                   </td>
                   <td>
