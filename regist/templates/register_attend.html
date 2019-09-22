@@ -1,0 +1,37 @@
+{% extends 'layout/base_nomenu.html' %}
+
+{% block title %}
+  <h1 class="h4 text-gray-900 mb-2">Create Account</h1><br/>
+  {% if success %}
+    <p class="mb-4">Your account is successfully created, please check your email to activate the account.</p>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if not success %}
+  <form method="POST" class="user">
+  {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        {{ field }}
+        {% for error in field.errors %}
+          <p style="color: red">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <input type="submit" value="Create Account" class="btn btn-primary btn-user btn-block"/>
+  </form>
+    {% endif %}
+  <hr>
+  <div class="text-center">
+    <a class="small" href="{% url 'forget_password' %}">Forgot Password?</a>
+  </div>
+  <div class="text-center">
+    <a class="small" href="{% url 'login' %}">Already have an account? Login!</a>
+  </div>
+{% endblock %}
+
+{% block script %}
+{% endblock %}

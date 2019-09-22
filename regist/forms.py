@@ -9,6 +9,35 @@ from django.forms import ChoiceField
 from regist.models import Payment, Author, Article
 
 
+class AttendantCreationForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super(AttendantCreationForm, self).__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Username*'})
+        self.fields['email'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Email*'})
+        self.fields['first_name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'First name*'})
+        self.fields['last_name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Last name*'})
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        try:
+            if email:
+                user = User.objects.get(email=email)
+                if user:
+                    raise forms.ValidationError(u'This email has been registered.')
+            else:
+                raise forms.ValidationError(u'Please input email')
+        except User.DoesNotExist:
+            pass
+        except User.MultipleObjectsReturned:
+            raise forms.ValidationError(u'This email has been registered.')
+
+        return email
+
+
 class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
@@ -45,7 +74,7 @@ class SearchPaymentForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(SearchPaymentForm, self).__init__(*args, **kwargs)
-        self.fields['name_text'].widget.attrs.update({'class': 'form-control', 'placeholder': 'EDAS ID, Title'})
+        self.fields['name_text'].widget.attrs.update({'class': 'form-control', 'placeholder': 'EDAS ID, Title, Author Name'})
         self.fields['method'].widget.attrs.update({'class': 'form-control'})
         self.fields['currency'].widget.attrs.update({'class': 'form-control'})
 

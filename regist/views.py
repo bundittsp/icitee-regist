@@ -4,6 +4,7 @@ from distutils.util import strtobool
 from pprint import pprint
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
@@ -19,9 +20,41 @@ from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from regist.forms import AuthorForm, UserForm, SearchPaymentForm, UploadFileForm
+from regist.forms import AuthorForm, UserForm, SearchPaymentForm, UploadFileForm, AttendantCreationForm
 from regist.models import Article, Payment, Author
 from regist.tokens import account_activation_token
+
+
+def register_attend(request):
+    success = False
+    if request.method == 'POST':
+        form = AttendantCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            letters_and_digits = string.ascii_letters + string.digits
+            password = ''.join(random.choice(letters_and_digits) for i in range(8))
+            user.set_password(password)
+            user.save()
+
+            current_site = get_current_site(request)
+            subject = 'ICITEE2019 - account activation'
+            message = render_to_string('email/acc_active_email.html', {
+                'user': user,
+                'password': password,
+                'domain': current_site.domain,
+                'uid': user.pk,
+                'token': account_activation_token.make_token(user),
+            })
+
+            email = EmailMessage(
+                subject, message, to=[user.email]
+            )
+            email.send()
+            success = True
+    else:
+        form = AttendantCreationForm()
+
+    return render(request, 'register_attend.html', {'form': form, 'success': success})
 
 
 def register(request):
@@ -173,8 +206,11 @@ def payment_search(request):
         query = [Q(del_flag=False)]
         if name:
             query.append(
-                Q(paymentitem__article__edas_id=name) |
-                Q(paymentitem__article__title__icontain=name))
+                Q(paymentitem__article__edas_id__icontains=name) |
+                Q(paymentitem__article__title__icontains=name) |
+                Q(paymentitem__article__authors__first_name__icontains=name) |
+                Q(paymentitem__article__authors__last_name__icontains=name)
+            )
         if method:
             query.append(Q(method=method))
         if currency:

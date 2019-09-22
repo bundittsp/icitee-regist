@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from regist.api.serializer import AdditionalItemSerializer, ArticleSerializer, PaymentSerializer, PaymentItemSerializer
-from regist.models import AdditionalItem, Article
+from regist.models import AdditionalItem, Article, Author
 
 
 class ArticleListAPIView(APIView):
@@ -40,13 +40,18 @@ class AdditionalItemListAPIView(APIView):
                 addition.disc_price -= addition.early_disc
                 addition.disc_price_us -= addition.early_disc_us
             else:
-                # ส่วนลด ugm และ jsci จะไม่สนใจ early bird จ่ายก่อนหรือหลังราคาเท่ากัน
-                if request.user.author.is_ugm:
-                    addition.disc_price -= addition.ugm_disc + addition.early_disc
-                    addition.disc_price_us -= addition.ugm_disc_us + addition.early_disc_us
-                if request.user.author.is_jcsi:
-                    addition.disc_price -= addition.jsci_disc + addition.early_disc
-                    addition.disc_price_us -= addition.jsci_disc_us + addition.early_disc_us
+                try:
+                    # ส่วนลด ugm และ jsci จะไม่สนใจ early bird จ่ายก่อนหรือหลังราคาเท่ากัน
+                    if request.user.author.is_ugm:
+                        addition.disc_price -= addition.ugm_disc + addition.early_disc
+                        addition.disc_price_us -= addition.ugm_disc_us + addition.early_disc_us
+                    if request.user.author.is_jcsi:
+                        addition.disc_price -= addition.jsci_disc + addition.early_disc
+                        addition.disc_price_us -= addition.jsci_disc_us + addition.early_disc_us
+                except Author.DoesNotExist:
+                    author = Author.objects.create()
+                    author.user = request.user
+                    author.save()
 
         serializer = AdditionalItemSerializer(additions, many=True)
 

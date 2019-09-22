@@ -24,6 +24,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='login.html'), name='logout'),
     path('register/', views.register, name='register'),
+    path('register-attend/', views.register_attend, name='register_attend'),
     path('forget-password/', views.forget_password, name='forget_password'),
     path('activate/<str:uid>/<str:token>/', views.activate, name='activate'),
     path('regist/', include('regist.urls')),
