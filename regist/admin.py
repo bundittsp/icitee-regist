@@ -113,7 +113,7 @@ class MyPaymentAdminForm(forms.ModelForm):
 class PaymentAdmin(admin.ModelAdmin):
     form = MyPaymentAdminForm
 
-    list_display = ('code', 'create_by_name', 'article_name_list', 'remark', 'slip', 'ieee')
+    list_display = ('code', 'create_by_name', 'article_name_list', 'remark', 'confirm')
     search_fields = ['code']
     list_filter = ('confirm', 'member')
 
