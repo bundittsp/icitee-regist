@@ -51,3 +51,6 @@ src/env.py
 
 # Production configs
 docker-compose.yml
+
+# mysql backup
+backup/

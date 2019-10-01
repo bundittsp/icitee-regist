@@ -14,7 +14,7 @@ services:
     ports:
       - 3306:3306
   
-  app:
+  web:
     build: .
     # command: gunicorn --bind 0.0.0.0:8000 --env DJANGO_SETTINGS_MODULE=icitee19.productions icitee19.wsgi 
     command: python manage.py runserver 0.0.0.0:8000 --settings=icitee19.productions
