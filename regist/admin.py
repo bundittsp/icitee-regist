@@ -1,6 +1,7 @@
 import csv
 from functools import update_wrapper
 
+from django import forms
 from django.conf.urls import url
 from django.contrib import admin
 
@@ -9,7 +10,7 @@ from django.contrib.auth.models import User
 from django.db import DatabaseError, transaction
 from django.shortcuts import render
 from django.urls import path
-from regist.models import Author, Article
+from regist.models import Author, Article, Payment
 
 
 class AuthorAdmin(admin.ModelAdmin):
@@ -97,3 +98,24 @@ class ArticleAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Article, ArticleAdmin)
+
+
+class MyPaymentAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(MyPaymentAdminForm, self).__init__(*args, **kwargs)
+        self.fields['address'].widget = forms.Textarea()
+
+    class Meta:
+        model = Payment
+        fields = ['code', 'remark', 'address', 'method', 'currency', 'slip', 'ieee', 'confirm']
+
+
+class PaymentAdmin(admin.ModelAdmin):
+    form = MyPaymentAdminForm
+
+    list_display = ('code', 'create_by_name', 'article_name_list', 'remark', 'slip', 'ieee')
+    search_fields = ['code']
+    list_filter = ('confirm', 'member')
+
+
+admin.site.register(Payment, PaymentAdmin)

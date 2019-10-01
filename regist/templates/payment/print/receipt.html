@@ -1,10 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+{% extends 'layout/base_print.html' %}
+{% load multiply %}
 
-</body>
-</html>
+{% block title %}
+  Payment No.: {{ payment.code }}
+{% endblock %}
+
+{% block style %}
+  <style>
+    body {
+      background: rgb(204,204,204);
+    }
+    page[size="A4"] {
+      background: white;
+      width: 21cm;
+      height: 29.7cm;
+      display: block;
+      margin: 0 auto;
+      margin-top: 0.5cm;
+      margin-bottom: 0.5cm;
+      padding-top: 1.5cm;
+      padding-bottom: 1.5cm;
+      padding-left: 2cm;
+      padding-right: 1cm;
+      box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+    }
+    @media print {
+      body, page[size="A4"] {
+        margin: 0;
+        box-shadow: 0;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <page size="A4">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="display-4">ICITEE 2019</h1>
+      </div>
+      <div class="col-8">
+        <p class="lead">
+          The 11<sup>th</sup> International Conference on Information Technology and Electrical Engineering
+        </p>
+      </div>
+    </div>
+    <hr style="border: 2px solid black; margin-top: 0px;" />
+    <div class="row">
+      <div class="col-6">
+        Date: October 10-11, 2019<br/>
+        Venue: Pattaya, Thailand<br/>
+        Website: https://www.icitee.org
+      </div>
+      <div class="col-6">
+        Organized by:<br/>
+        Faculty of Information Technology,<br/>
+        KMITL, Thailand
+      </div>
+    </div><br/><br/>
+    <div class="row">
+      <div class="col-12 text-center">
+        <p class="h4">Payment Receipt for ICITEE 2019</p>
+      </div>
+      <div class="col-6">
+        No.: {{ payment.code }}
+      </div>
+      <div class="col-6 text-right">
+        Date: {{ payment.create_date.date }}
+      </div>
+      <div class="col-12">
+        Receive money from: {{ payment.create_by.get_full_name }}
+      </div>
+      <div class="col-12">
+        Address: {{ payment.address }}
+      </div>
+    </div><br/>
+    <div class="row">
+      <div class="col">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Amount</th>
+                <th>Total</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% if payment.paymentitem_set %}
+                {% for item in payment.paymentitem_set.all %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>
+                    {{ item.add_item.name }}
+                    {% if item.article %}
+                      <br><small><strong>{{ item.article.edas_id }}: </strong>{{ item.article.title }}</small>
+                      <br>
+                      <small>
+                        {% for author in item.article.authors.all %}
+                          {{ author.get_full_name }};&nbsp;
+                        {% endfor %}
+                      </small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.price > 0 %}
+                      {{ item.price }} THB
+                    {% elif item.price_us > 0 %}
+                      {{ item.price_us }} USD
+                    {% endif %}
+                  </td>
+                  <td>{{ item.amount }}</td>
+                  <td>
+                    {% if item.price > 0 %}
+                      {{ item.price|multiply:item.amount }} THB
+                    {% elif item.price_us > 0 %}
+                      {{ item.price_us|multiply:item.amount }} USD
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="7">No data</td>
+                </tr>
+              {% endif %}
+              </tbody>
+            </table>
+          </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6">
+        <strong>Total amount of money received:</strong>
+      </div>
+      <div class="col-6">
+          {% if payment.currency == 'THB' %}
+            {{ total }} {{ payment.currency }} <br/> ({{ total_word|capfirst }})
+          {% elif payment.currency == 'USD' %}
+            {{ total_us }} {{ payment.currency }} <br/> ({{ total_us_word|capfirst }})
+          {% endif %}
+      </div>
+    </div><br/><br/>
+    <div class="row">
+        <div class="col-6 offset-6 text-right mt-5 border-bottom">
+        </div>
+      <div class="col-6 offset-6 text-right">
+        Ms.Pichitra  Suwansri
+        </div>
+      <div class="col-8 offset-4 text-right">
+        <small>Financial  Officer, Faculty of Information Technology,  KMITL,  Thailand</small>
+        </div>
+     </div><br/>
+    <div class="row">
+        <div class="col-6 offset-6 text-right mt-5 border-bottom">
+        </div>
+      <div class="col-6 offset-6 text-right">
+        Assos. Prof.Dr. Worapoj Kreesuradej
+        </div>
+      <div class="col-8 offset-4 text-right">
+        <small>Vice Dean, Faculty of Information Technology,  KMITL,  Thailand</small>
+      </div>
+      <div class="col-8 offset-4 text-right">
+        <small>Chair of ICITEE 2019</small>
+      </div>
+     </div>
+  </page>
+{% endblock %}

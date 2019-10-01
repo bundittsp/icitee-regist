@@ -20,7 +20,7 @@ from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from regist.forms import AuthorForm, UserForm, SearchPaymentForm, UploadFileForm, AttendantCreationForm
+from regist.forms import AuthorForm, UserForm, SearchPaymentForm, UploadFileForm, AttendantCreationForm, PaymentForm
 from regist.models import Article, Payment, Author
 from regist.tokens import account_activation_token
 
@@ -322,6 +322,21 @@ def print_confirm(request, payment_id):
         'payment': payment,
         'total': total['sum_thb'],
         'total_us': total['sum_usd'],
+    })
+
+
+@login_required
+def print_receipt(request, payment_id):
+    payment = get_object_or_404(Payment, pk=payment_id, del_flag=False)
+    total = payment.paymentitem_set.all().aggregate(sum_thb=Sum('price'), sum_usd=Sum('price_us'))
+    from num2words import num2words
+
+    return render(request, 'payment/print/receipt.html', {
+        'payment': payment,
+        'total': total['sum_thb'],
+        'total_word': num2words(total['sum_thb']),
+        'total_us': total['sum_usd'],
+        'total_us_word': num2words(total['sum_usd']),
     })
 
 

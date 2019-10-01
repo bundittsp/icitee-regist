@@ -344,6 +344,15 @@ class Payment(models.Model):
     def get_method_text(self):
         return [t[1] for t in self.METHODS if t[0] == self.method][0]
 
+    def create_by_name(self):
+        return self.create_by.get_full_name()
+
+    def article_name_list(self):
+        name_list = ''
+        for item in self.paymentitem_set.filter(article__isnull=False):
+            name_list += item.article.title + '; '
+        return name_list
+
 
 class PaymentItem(models.Model):
     payment = models.ForeignKey(Payment, on_delete=models.CASCADE)

@@ -88,10 +88,12 @@
                     <td>{{ payment.create_by__first_name }} {{ payment.create_by__last_name }}</td>
                     <td>{{ payment.create_date__date }}</td>
                     <td>{{ payment.confirm }}</td>
-                    <td>
+                    <td style="text-align: center;">
                       <a href="{% url 'payment-detail' payment.id %}"><i class="fas fa-fw fa-info-circle"></i></a>
+                    &nbsp;&nbsp;
                       <a href="{% url 'payment-print-receipt' payment.id %}"><i class="fas fa-fw fa-print"></i></a>
                       {% if not payment.confirm %}
+                         &nbsp;&nbsp;
                         <a href="{% url 'payment-delete' payment.id %}" name="delete"><i
                           class="fas fa-fw fa-trash text-danger"></i></a>
                       {% endif %}
