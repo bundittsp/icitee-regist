@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: icitee19
+      MYSQL_USER: icitee19
+      MYSQL_PASSWORD: secret
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - 3306:3306
+  
+  app:
+    build: .
+    # command: gunicorn --bind 0.0.0.0:8000 --env DJANGO_SETTINGS_MODULE=icitee19.productions icitee19.wsgi 
+    command: python manage.py runserver 0.0.0.0:8000 --settings=icitee19.productions
+    ports:
+      - 80:8000
+    environment:
+      MYSQL_DATABASE: icitee19
+      MYSQL_USER: icitee19
+      MYSQL_PASSWORD: secret
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306

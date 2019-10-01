@@ -48,3 +48,6 @@ src/env.py
 *.jpg
 *.pdf
 *.png
+
+# Production configs
+docker-compose.yml
