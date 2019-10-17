@@ -69,10 +69,10 @@
         Date: October 10, 2019
       </div>
       <div class="col-12">
-        Receive money from: {{ payment.create_by.get_full_name }}
+        Receive money from: {{ payment.create_by.get_full_name|default:'-' }}
       </div>
       <div class="col-12">
-        Address: {{ payment.address }}
+        Address: {{ payment.address|default:'-' }}
       </div>
     </div><br/>
     <div class="row">
@@ -89,6 +89,13 @@
               </tr>
               </thead>
               <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
               {% if payment.paymentitem_set %}
                 {% for item in payment.paymentitem_set.all %}
                 <tr>
@@ -138,9 +145,11 @@
       </div>
       <div class="col-6">
           {% if payment.currency == 'THB' %}
-            {{ total }} {{ payment.currency }} <br/> ({{ total_word|capfirst }})
+            {{ total }} {{ payment.currency }}
+            <!--<br/> ({{ total_word|capfirst }})-->
           {% elif payment.currency == 'USD' %}
-            {{ total_us }} {{ payment.currency }} <br/> ({{ total_us_word|capfirst }})
+            {{ total_us }} {{ payment.currency }}
+            <!--<br/> ({{ total_us_word|capfirst }})-->
           {% endif %}
       </div>
     </div><br/><br/>

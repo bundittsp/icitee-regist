@@ -328,7 +328,7 @@ def print_confirm(request, payment_id):
 @login_required
 def print_receipt(request, payment_id):
     payment = get_object_or_404(Payment, pk=payment_id, del_flag=False)
-    total = payment.paymentitem_set.all().aggregate(sum_thb=Sum('price'), sum_usd=Sum('price_us'))
+    total = payment.paymentitem_set.all().aggregate(sum_thb=Coalesce(Sum('price'), 0), sum_usd=Coalesce(Sum('price_us'), 0))
     from num2words import num2words
 
     return render(request, 'payment/print/receipt.html', {

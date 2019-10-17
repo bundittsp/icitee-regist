@@ -338,7 +338,7 @@ class Payment(models.Model):
     del_flag = models.BooleanField(default=False)
     create_date = models.DateTimeField(auto_now_add=True)
     delete_date = models.DateTimeField(auto_now=True, blank=True, null=True)
-    create_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_create_by')
+    create_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_create_by', blank=True, null=True)
     delete_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='payment_delete_by', blank=True, null=True)
 
     def get_method_text(self):
